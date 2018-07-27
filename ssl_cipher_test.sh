@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ##########################################################################################
 # Abash script to test cipher suites. 
@@ -12,10 +12,6 @@
 # Date:
 #  2017-May-01
 ##########################################################################################
-
-####################################################################################################################################
-
-####################################################################################################################################
 
 # SSL_RSA_WITH_RC4_128_MD5 (JSSE name)       >>>   RC4-MD5(opensl name)
 # SSL_RSA_WITH_RC4_128_SHA (JSSE name)       >>>   RC4-SHA(opensl name)
@@ -36,26 +32,22 @@ echo Obtaining cipher list from $(openssl version).
 
 for cipher in ${ciphers[@]}
 do
-# echo -n Testing $cipher...
-result=$(echo -n | openssl s_client -cipher "$cipher" -connect $SERVER 2>&1)
-if [[ "$result" =~ ":error:" ]] ; then
-  # echo -n Testing $cipher...
-  # error=$(echo -n $result | cut -d':' -f6)
-  # echo NO \($error\)
-  echo -n
-else
-  if [[ "$result" =~ "Cipher is ${cipher}" || "$result" =~ "Cipher    :" ]] ; then
-  	echo -n Testing $cipher...
-  	protocol=$(echo -n $result | grep -Po 'Protocol : \K[^ ]*')    # \K keeps the text matched so far out of the overall regex match
-    echo YES \(Protocol: $protocol\)
+  echo -n Testing $cipher...
+  result=$(echo -n | openssl s_client -cipher "$cipher" -connect $SERVER 2>&1)
+  if [[ "$result" =~ ":error:" ]] ; then
+    error=$(echo -n $result | cut -d':' -f6)
+    echo NO \($error\)
+    # echo -n # do not print trailing newline char
   else
-  	echo -n Testing $cipher...
-    echo UNKNOWN RESPONSE
-    echo $result
+    if [[ "$result" =~ "Cipher is ${cipher}" || "$result" =~ "Cipher    :" ]] ; then
+    	protocol=$(echo -n $result | grep -Po 'Protocol : \K[^ ]*')    # \K keeps the text matched so far out of the overall regex match
+      echo YES \(Protocol: $protocol\)
+    else
+      echo UNKNOWN RESPONSE
+      echo $result
+    fi
   fi
-fi
-sleep $DELAY
+  sleep $DELAY
 done
-
 
 echo -e "End of script."
